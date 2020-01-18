@@ -1,0 +1,152 @@
+#!/bin/bash
+
+#zmiana czcionki na czcionke z polskimi znakami (na ubuntu dziala na archu nie - nie wiem dlaczego)
+sudo setfont Lat2-Terminus16.psfu.gz -m 8859-2
+
+#okienko witajace uzytkownika
+dialog --title "Instalator" --msgbox "Witaj w instalatorze systemu Arch Linux" 5 45
+
+sudo systemctl enable dhcpcd.service
+
+dialog --title "Informacja" --yesno "Do instalacji systemu bedziesz potrzebowal polaczenia z siecia. Czy chcesz sprawdzic swoje polaczenie?" 10 38
+
+wybor=$?
+ping=`ping google.com -c 4`
+
+#tu uzytkownik testuje polaczenie i w miare potrzeby moze polaczyc sie z wifi
+while [ 1 ]
+do
+
+case $wybor in
+0) dialog --title "Polaczenie" --yesno "$ping
+
+Jesli wystapil blad i nie mogles polaczyc sie z siecia upewnij sie, ze kabel Ethernet zostal dobrze wpiety lub alternatywnie nie masz polaczenia z siecia Wi-Fi. Czy chcesz polaczyc sie z siecia bezprzewodowa?" 20 92   # wybor jesli postanowil sprawdzic polaczenie
+    
+    wybor=$?
+    
+    case $wybor in
+    0) # wybor jesli zdecyduje sie na polaczenie z wifi
+    
+       # wprowadzenie nazwy sieci
+       odp=1                  # na poczatku przypisuje do zmiennej "odp" wartosc 1, aby na starcie moc w petli
+       while [ $odp != 0 ]    # while uzyskac efekt wyrazenia konczacego petle kiedy "odp" osiagnie wartosc 0
+       do                     # czyli kiedy uzytkownik wybierze "yes" w opcji dialogu (linia 48), zdefiniowanie
+                              # "odp" na samym poczatku jest wazne aby to moc ta zmienna umiescic w while
+                              # w przeciwnym wypadku bedzie to jeszcze nie istniejaca - pusta zmienna
+       
+       dialog --title "Wprowadz informacje" --inputbox "Wprowadz SSID sieci: " 8 35 "" 2> dane_SSID
+        
+       dane=$?
+       info=`cat dane_SSID`
+        
+       case $dane in
+       0) dialog --title "Sprawdz" --yesno "Czy nazwa sieci sie zgadza: $info?" 5 45
+          
+          odp=$?
+          
+          case $odp in
+          0) SSID=$info
+             sudo cp /etc/netctl/examples/wireless-wpa /etc/netctl/$SSID
+             sudo sed -i -e "s/MyNetwork/$SSID/g" /etc/netctl/$SSID
+             # netctl to proste narzedzie, ktore mozna wykorzystac do polaczenia z wifi w trakcie instalacji
+             # archa, czesto z niego korzystalem przy probach zainstalowania systemu na laptopie bo nie ma on
+             # portu ethernet i byl to jedyny sposob
+             break ;;
+          1) continue;;
+          esac ;;
+          
+       1) sudo rm dane_SSID
+          continue 2 ;;
+       esac
+       done
+       
+       sudo rm dane_SSID
+       
+       # wprowadzenie hasla do sieci
+       odp=1
+       while [ $odp != 0 ]
+       do
+       
+       dialog --title "Wprowadz informacje" --inputbox "Wprowadz haslo sieci: " 8 35 "" 2> dane_haslo
+        
+       dane=$?
+       info=`cat dane_haslo`
+        
+       case $dane in
+       0) dialog --title "Sprawdz" --yesno "Czy haslo sie zgadza: $info?" 5 45
+          
+          odp=$?
+          
+          case $odp in
+          0) sudo sed -i -e "s/WirelessKey/$info/g" /etc/netctl/$SSID
+             break ;;
+          1) continue ;;
+          esac ;;
+          
+       1) sudo rm dane_haslo
+          continue 2 ;;
+       esac
+       done
+       
+       sudo rm dane_haslo
+       
+       # wprowadzenie interface'u
+       odp=1
+       while [ $odp != 0 ]
+       do
+       
+       dialog --title "Wprowadz informacje" --inputbox \
+       "Wprowadz interface sieci (domyslnie wlan0 - Enter): " 8 35 "" 2> dane_interface
+        
+       dane=$?
+       info=`cat dane_interface`
+       
+       if [ $info = ]
+       then
+       info=wlan0
+       fi
+          
+          case $dane in
+       0) dialog --title "Sprawdz" --yesno "Czy interface sieci sie zgadza: $info?" 5 45
+          
+          odp=$?
+          
+          case $odp in
+          0) if [ $info = wlan0 ]
+             then 
+             break # jesli wybrano wlan0 nic sie nie dzieje poniewaz w pliku domyslnie ustawione jest wlan0
+             else  # w przeciwnym wypadku wlan0 zostaje podmieniony na interface jaki wpisal uzytkownik
+             sudo sed -i -e "s/wlan0/$info/g" /etc/netctl/$SSID
+             fi ;;
+             
+          1) continue ;;
+          esac ;;
+          
+       1) sudo rm dane_interface
+          continue 2 ;;
+       esac
+       done
+          
+       sudo rm dane_interface
+       
+       sudo netctl start $SSID
+       
+       
+       netctl=`cat /etc/netctl/$SSID`
+       
+       dialog --title "Wi-Fi" --msgbox "Oto plik konfiguracyjny /etc/netctl/$SSID:
+       $netctl" 20 60
+       
+       break ;;
+       
+    1) # wybor jesli z polaczeniem nie bylo problemow i chce przejsc dalej
+       break ;;
+    esac ;;
+
+1) break ;; # wybor jesli nie chce sprawdzac polaczania z siecia
+esac
+
+done
+
+#przejscie do menu programu
+./install-menu

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+dialog --title "GRUB" --msgbox "Teraz zainstalujemy pogram rozruchowy - GRUB" 8 40
+
+yes | sudo pacman -S grub
+
+dysk=`cat wybor_dysk`
+
+grub-install /dev/$dysk
+
+grub-mkconfig -o /boot/grub/grub.cfg
+
+dialog --title "Koniec" --msgbox "
+Instalacja dobiegla konca! Teraz mozesz opuscic instalator i zrestartowac komputer." 8 50
+
+sudo rm lista_dysk wybor_menu wybor_part

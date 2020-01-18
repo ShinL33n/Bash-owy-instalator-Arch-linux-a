@@ -1,0 +1,2 @@
+plik do uruchomienia na poczatku instalacji: install-run
+plik do uruchomienia po kroku instalacji podstawowego systemu: install-run2

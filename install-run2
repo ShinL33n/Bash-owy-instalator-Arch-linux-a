@@ -1,0 +1,188 @@
+#!/bin/bash
+
+dialog --title "Strefa czasowa" --menu "Wybierz swoj region:" 20 40 10 Europe "" America "" Australia "" Brazil "" Canada "" 2> region
+
+wynik=$?
+reg=`cat region`
+
+case $wynik in
+
+    0) case $reg in
+        
+        Europe) dialog --title "Strefa czasowa" --menu "Wybierz miasto:" 20 40 10 Warsaw "" Amsterdam "" Berlin "" Paris "" Prague "" Moscow "" Rome "" Stockholm "" Zagreb "" 2> miasto
+        
+        wybor=$?
+        mst=`cat miasto`
+        
+        case $wybor in
+        
+            0) sudo ln -sf /usr/share/zoneinfo/$reg/$mst /etc/localtime ;;
+            
+            1) powrot
+               sudo rm region miasto 
+               exit ;;
+        
+        esac ;;
+        
+        America) dialog --title "Strefa czasowa" --menu "Wybierz miasto:" 20 40 10 Araguaina "" Chicago "" Detroit "" Havana "" Los_Angeles "" New_York "" Panama "" Sao_Paulo "" Toronto "" 2> miasto
+        
+        wybor=$?
+        mst=`cat miasto`
+        
+        case $wybor in
+        
+            0) sudo ln -sf /usr/share/zoneinfo/$reg/$mst /etc/localtime ;;
+            
+            1) powrot
+               sudo rm region miasto
+               exit ;;
+        
+        esac ;;
+        
+        Australia) dialog --title "Strefa czasowa" --menu "Wybierz miasto:" 20 40 10 Adelaide "" Darwin "" North "" Sydney "" Tasmania "" West "" 2> miasto
+        
+        wybor=$?
+        mst=`cat miasto`
+        
+        case $wybor in
+        
+            0) sudo ln -sf /usr/share/zoneinfo/$reg/$mst /etc/localtime ;;
+            
+            1) powrot
+               sudo rm region miasto 
+               exit ;;
+        
+        esac ;;
+        
+        Brazil) dialog --title "Strefa czasowa" --menu "Wybierz miasto:" 20 40 10 Acre "" DeNoronha "" East "" West "" 2> miasto
+        
+        wybor=$?
+        mst=`cat miasto`
+        
+        case $wybor in
+        
+            0) sudo ln -sf /usr/share/zoneinfo/$reg/$mst /etc/localtime ;;
+            
+            1) powrot
+               sudo rm region miasto 
+               exit ;;
+        
+        esac ;;
+        
+        Canada) dialog --title "Strefa czasowa" --menu "Wybierz miasto:" 20 40 10 Atlantic "" Central "" Eastern "" Mountain "" Newfoundland "" Pacific "" Saskatchewan "" Yukon "" 2> miasto
+        
+        wybor=$?
+        mst=`cat miasto`
+        
+        case $wybor in
+        
+            0) sudo ln -sf /usr/share/zoneinfo/$reg/$mst /etc/localtime ;;
+            
+            1) powrot
+               sudo rm region miasto ;;
+        
+        esac ;;
+       
+       esac ;;
+    
+    1) powrot
+       sudo rm region
+       exit ;;
+       
+esac
+
+sudo rm region miasto
+
+sudo sed -i -e "s/#pl_PL.UTF-8/pl_PL.UTF-8/g" /etc/locale.gen
+sudo sed -i -e "s/#en_US.UTF-8/en_US.UTF-8/g" /etc/locale.gen
+
+sudo locale-gen        #ZAMIENIC 
+
+dialog --title "Wybierz jezyk" --radiolist "" 10 30 3 PL " Polski " on EN " English " off  2> wybor_jezyka
+
+sel=$?
+wybor=`cat wybor_jezyka`
+
+case $sel in
+
+    #informowanie uzytkownika o jego wyborze
+    0)   case $wybor in
+            PL) sudo echo "LANG=pl_PL.UTF-8" > /etc/locale.conf ;; #ZAMIENIĆ
+            EN) sudo echo "LANG=en_US.UTF-8" > /etc/locale.conf ;;
+         esac
+        
+       sudo rm wybor_jezyka 
+       read ;;
+       
+    1) powrot
+       sudo rm wybor_jezyka 
+       exit ;;
+       
+esac
+
+# musi byc wybrany uklad klawiatury z 1 kroku
+uklawiatury=`cat wybor_ukladklawiatury`
+
+case $uklawiatury in
+
+    PL) sudo echo "KEYMAP=pl" > /etc/vconsole.conf ;;
+    US) sudo echo "KEYMAP=us" > /etc/vconsole.conf ;;
+    DE) sudo echo "KEYMAP=de-latin1" > /etc/vconsole.conf ;;
+
+esac
+
+
+dialog --title "Pytanie" --yesno "Czy chesz aby w konsoli byla mozliwosc wprowadzania polskich znakow?" 7 40
+
+wybor=$?
+
+case $wybor in
+
+    0) sudo echo "FONT=Lat2-Terminus16.psfu.gz" >> /etc/vconsole.conf
+       sudo echo "FONT_MAP=8859-2" >> /etc/vconsole.conf ;;
+    
+    1) ;;
+    
+esac
+
+sudo rm wybor_ukladklawiatury
+
+dialog --title "Nazwa" --inputbox "Wprowac nazwe dla hosta:" 8 40 "" 2> host
+
+wybor=$?
+nhosta=`cat host`
+
+case $wybor in
+    
+    0) sudo mkdir /etc/$nhosta ;;
+    
+    1) powrot 
+       sudo rm host
+       exit ;;
+    
+esac
+
+
+# nieobowiazkowy krok, ale mozliwy
+sudo echo "127.0.0.1   localhost.localdomain   localhost" >> /etc/hosts
+sudo echo "::1         localhost.localdomain   localhost" >> /etc/hosts
+sudo echo "127.0.1.1   $nhosta.localdomain     $nhosta" >> /etc/hosts
+
+dialog --title "Haslo" --inputbox "Wprowac haslo dla uzytkownika root:" 9 40 "" 2> passwd
+
+wybor=$?
+haslo=`cat passwd`
+
+case $wybor in
+    
+    0) echo root:$haslo | chpasswd ;;
+    
+    1) powrot 
+       sudo rm passwd
+       exit ;;
+    
+esac
+
+sudo rm host passwd
+
+./install-grub

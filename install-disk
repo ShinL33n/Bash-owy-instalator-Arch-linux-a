@@ -1,0 +1,68 @@
+#!/bin/bash
+
+function powrot
+{
+dialog --title "Wiadomosc" --infobox " Powrot do menu " 3 21
+sleep 1
+}
+
+
+# zapewniamy czy zegar systemowy dziala dokladnie
+timedatectl set-ntp true
+
+if [ -e /sys/firmware/efi/efivars ] # jesli ten plik istnieje mozemy skorzystac z UEFI 
+then
+dialog --title "UEFI" --msgbox "Znalezlismy, że twoj komputer korzysta z UEFI.\nZalecamy, wiec wybranie GPT jako tabeli partycji." 10 45
+else
+dialog --title "UEFI" --msgbox "Nie znalezlismy plikow powiazanych z UEFI na twoim komputerze.\nZalecamy, wiec wybranie MBR (DOS) jako tabeli partycji." 10 45
+fi
+
+lsblk=`sudo lsblk`
+
+while [ 1 ]
+do
+
+dialog --title "Dysk" --inputbox "$lsblk
+
+Powyzej widac twoje dostepne dyski. Wybierz, na ktorym chcesz zainstalowac system. (dla przykladu: sda, mmcblk0)" 20 45 "" 2> wybor_dysk
+
+wybor=$?
+dysk=`cat wybor_dysk`
+
+case $wybor in
+
+0)  wybor=1
+    while [ $wybor != 0 ]
+    do
+
+    sudo cfdisk /dev/$dysk
+
+    dialog --title "Dysk" --yesno "
+    Czy ponizsze partycje sie zgadzaja?
+    (Esc - jesli chcesz wrocic do wyboru 
+    dyskow)
+
+    $lsblk" 20 45
+
+    wybor=$?
+
+    case $wybor in
+
+        0) break 2 ;;
+    
+        1) continue;;
+    
+        255) continue 2 ;;
+
+    esac
+    done ;;
+    
+1) powrot 
+   exit ;;
+    
+esac
+done
+
+#sudo rm wybor_dysk
+
+./install-partition

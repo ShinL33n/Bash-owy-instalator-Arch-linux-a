@@ -1,0 +1,33 @@
+#!/bin/bash
+
+function powrot
+{
+dialog --title "Wiadomosc" --infobox " Powrot do menu " 3 21
+sleep 1
+}
+
+#wybor rodzaju klawiatury
+dialog --title "Wybierz uklad klawiatury" --radiolist "" 10 30 3 PL " polski " on US " angielski " off DE " niemiecki " off 2>wybor_ukladklawiatury
+
+wybor=$?
+odp=`cat wybor_ukladklawiatury`
+
+case $wybor in
+
+    #informowanie uzytkownika o jego wyborze
+    0) dialog --title "Wiadomosc" --infobox "Wybrales uklad $odp" 3 25
+         case $odp in      #ustawienie odpowiedniego ukladu klawiatury zgodnie z wyborem
+            PL) sudo loadkeys pl ;;
+            US) sudo loadkeys us ;;
+            DE) sudo loadkeys de-latin1 ;;
+         esac
+        
+      # sudo rm wybor_ukladklawiatury 
+       read
+       ./install-disk;; #idziemy od razu do nastepnej opcji
+       
+    #wyswietlanie komunikatu powrotu i powrot do menu
+    1) #sudo rm wybor_ukladklawiatury 
+       powrot ;;
+       
+esac

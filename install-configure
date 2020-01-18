@@ -1,0 +1,22 @@
+re#!/bin/bash
+
+function powrot
+{
+dialog --title "Wiadomosc" --infobox " Powrot do menu " 3 21
+sleep 1
+}
+
+dialog --title "Instalacja" --msgbox "
+Teraz nastapi zainstalowanie podstawowego systemu." 8 35 
+
+sudo pacstrap /mnt base linux linux-firmware dhcpcd netctl dialog sudo nano
+
+sudo genfstab -U /mnt >> /mnt/etc/fstab
+
+dialog --title "Koniec" --msgbox "
+Instalacja bazowego systemu zostala zakonczona, uruchom teraz plik install-run2 aby dokonczyc instalacje." 8 50
+
+sudo arch-chroot /mnt
+
+
+

@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#petla dzieki ktorej po wyjsciu z danej opcji wracamy do menu
+while [ 1 ]
+do
+
+#wyswietlenie opcji menu
+dialog --title "Menu" --menu "" 20 50 20 1 "Uklad klawiatury" 2 "Partycjonowanie dyskow" 3 "Montowanie partycji" 4 "Instalacja systemu" 5 "Instalacja programu rozruchowego" 2> wybor_menu
+
+sel=$?
+wybor=`cat wybor_menu`
+
+case $sel in
+
+#przy zatwierdzieniu opcji
+0) case $wybor in
+      1) ./install-uklad_klawiatury ;;
+      2) ./install-disk ;;
+      3) ./install-partition ;;
+      4) ./install-configure ;;
+      5) ./install-grub ;;
+   
+   esac ;;
+
+#przy anulowaniu
+1) dialog --title "Wyjscie" --yesno "Czy na pewno chcesz opuscic instalator?" 6 35
+
+   wybor=$?
+   
+   case $wybor in
+	0) break ;;     #jesli wybierzemy tak wychodzimy z programu
+	1) continue ;;  #jesli wybierzemy nie wracamy na poczatek petli - do menu
+   esac ;;
+   
+255) dialog --title "Wyjscie" --yesno "Czy na pewno chcesz opuscic instalator?" 6 35
+
+   wybor=$?
+   
+   case $wybor in
+	0) break ;;     #jesli wybierzemy tak wychodzimy z programu
+	1) continue ;;  #jesli wybierzemy nie wracamy na poczatek petli - do menu
+   esac ;;
+   
+esac
+done

@@ -1,0 +1,489 @@
+#!/bin/bash
+
+# na starcie powiem, ze po pierwsze nie wiem po co ktos mialby robic wiecej niz 1 partycje swap, ale jesli zrobilby taka to skrypt automatycznie jest w stanie utworzyc do 5 partycji, a po drugie chcialem sprawdzic czy dam rade zrobic skrypt, ktory bedzie w stanie to zrobic, troche mi to zajelo ale dalo rade.
+
+function powrot
+{
+dialog --title "Wiadomosc" --infobox " Powrot do menu " 3 21
+sleep 1
+}
+
+dysk=`cat wybor_dysk`
+
+sudo fdisk -l /dev/$dysk > lista_dysk
+
+sudo grep "Linux swap" ./lista_dysk > lista_swap
+
+sudo cut -d " " -f -1 lista_swap > lista_swap_part
+
+sudo split -l 1 -d lista_swap_part p_swap_
+
+sudo rm lista_swap lista_swap_part
+
+
+
+swap1=`cat p_swap_00`
+swap2=`cat p_swap_01`
+swap3=`cat p_swap_02`
+swap4=`cat p_swap_03`
+swap5=`cat p_swap_04`
+
+dialog --title "Swap" --checklist "Wybierz partycje swap lub pomin jesli nie utworzyles jej podczas podzialu partycji." 20 40 1 1 "$swap1" on 2 "$swap2" off 3 "$swap3" off 4 "$swap4" off 5 "$swap5" off 2> wybor_swap
+
+wybor=$?
+odp=`cat wybor_swap`
+
+case $wybor in
+
+    0) for wyniki in $odp
+       do
+        case $wyniki in
+            1) mkswap $swap1
+               swapon $swap1 ;;      
+            2) mkswap $swap2
+               swapon $swap2 ;;
+            3) mkswap $swap3
+               swapon $swap3 ;;
+            4) mkswap $swap4 
+               swapon $swap4 ;;
+            5) mkswap $swap5 
+               swapon $swap5 ;;
+        esac
+       done
+       read;;
+    1) powrot
+       sudo rm p_swap_* wybor_swap 
+       exit ;;
+    
+esac
+
+sudo rm p_swap_* wybor_swap
+
+# formatowanie partycji
+sudo grep " 83 " ./lista_dysk > lista_part
+
+sudo cut -d " " -f -1 lista_part > lista_part_dysk
+
+split -l 1 -d lista_part_dysk part_
+
+sudo rm lista_part_dysk
+
+ilosc=`sudo wc -l < lista_part`
+
+# wyswietli maksymalnie 8 partycji, bo tak
+part1=`cat part_00`
+part2=`cat part_01`
+part3=`cat part_02`
+part4=`cat part_03`
+part5=`cat part_04`
+part6=`cat part_05`
+part7=`cat part_06`
+part8=`cat part_07`
+
+while [ 1 ]
+do
+
+dialog --title "Wybor partycji" --menu "Wybierz partycje do uzytku jako katalog glowny (/):" 20 50 10 1 "$part1" 2 "$part2" 3 "$part3" 4 "$part4" 5 "$part5" 6 "$part6" 7 "$part7" 8 "$part8" 2> wybor_part
+
+wybor=$?
+part=`cat wybor_part`
+
+case $wybor in
+
+    0) case $part in
+        
+        1) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part1:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+        wybor=$?
+        odp=`cat wybor_fs`
+        
+        case $wybor in
+                0) sudo mkfs.$odp $part1
+                   sudo mount $part1 /mnt
+                   break ;;
+               
+            1) continue ;;
+        esac ;;
+        
+        2) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part2:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+        wybor=$?
+        odp=`cat wybor_fs`
+        
+        case $wybor in
+                0) sudo mkfs.$odp $part2
+                   sudo mount $part2 /mnt
+                   break ;;
+               
+            1) continue ;;
+        esac ;;
+        
+        3) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part3:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+        wybor=$?
+        odp=`cat wybor_fs`
+        
+        case $wybor in
+                0) sudo mkfs.$odp $part3
+                   sudo mount $part3 /mnt
+                   break ;;
+               
+            1) continue ;;
+        esac ;;
+        
+        4) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part4:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+        wybor=$?
+        odp=`cat wybor_fs`
+        
+        case $wybor in
+                0) sudo mkfs.$odp $part4
+                   sudo mount $part4 /mnt
+                   read
+                   break ;;
+                   
+            1) continue ;;
+        esac ;;
+        
+        5) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part5:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+        wybor=$?
+        odp=`cat wybor_fs`
+        
+        case $wybor in
+                0) sudo mkfs.$odp $part5
+                   sudo mount $part5 /mnt
+                   read
+                   break ;;
+               
+            1) continue ;;
+        esac ;;
+        
+        6) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part6:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+        wybor=$?
+        odp=`cat wybor_fs`
+        
+        case $wybor in
+                0) sudo mkfs.$odp $par6t
+                   sudo mount $part6 /mnt
+                   read
+                   break ;;
+               
+            1) continue ;;
+        esac ;;
+        
+        7) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part7:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+        wybor=$?
+        odp=`cat wybor_fs`
+        
+        case $wybor in
+                0) sudo mkfs.$odp $part7
+                   sudo mount $part7 /mnt
+                   read
+                   break ;;
+               
+            1) continue ;;
+        esac ;;
+        
+        8) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part8:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+        wybor=$?
+        odp=`cat wybor_fs`
+        
+        case $wybor in
+                0) sudo mkfs.$odp $part8
+                   sudo mount $part8 /mnt
+                   read
+                   break ;;
+               
+            1) continue ;;
+        esac ;;
+    
+       esac ;;
+
+    1) powrot
+       sudo rm part_* wybor_part wybor_fs lista_dysk lista_part
+       exit ;;
+
+esac
+done
+
+sudo rm wybor_part wybor_fs
+
+
+while [ 1 ]
+do
+
+
+if [ $part = 1 ]
+then
+part1="---"
+elif [ $part = 2 ]
+then
+part2="---"
+elif [ $part = 3 ]
+then
+part3="---"
+elif [ $part = 4 ]
+then
+part4="---"
+elif [ $part = 5 ]
+then
+part5="---"
+elif [ $part = 6 ]
+then
+part6="---"
+elif [ $part = 7 ]
+then
+part7="---"
+elif [ $part = 8 ]
+then
+part8="---"
+else
+break
+fi
+
+if [ $part1 = "---" ] && [ $part2 = "---" ] && [ $part3 = "---" ] && [ $part4 = "---" ] && [ $part5 = "---" ] && [ $part6 = "---" ] && [ $part7 = "---" ] && [ $part8 = "---" ]
+then
+echo "alla"
+read
+break
+fi
+
+
+if [ $ilosc > 1 ]
+then
+        i=0
+        while [ $i -le $ilosc ]
+        do
+            dialog --title "Wybor partycji" --menu "Widzimy ze posiadasz wiecej niewykorzystanych partycji. Wybierz jedna i podaj, gdzie chcesz ja zamontowac." 20 40 10 1 "$part1" 2 "$part2" 3 "$part3" 4 "$part4" 5 "$part5" 6 "$part6" 7 "$part7" 8 "$part8" Dalej "Kontynuuj" 2> wybor_mnt
+            
+            wybor=$?
+            part=`cat wybor_mnt`
+            
+            case $wybor in
+            
+                0) case $part in 
+                    
+                    1) dialog --title "Mount" --inputbox "Pod jaka sciezka chesz zamontowac partycje (moze to byc dowolna sciezka np /home)" 8 35 "" 2> sciezka
+                    
+                    wybor=$?
+                    sc=`cat sciezka`
+                    
+                    case $wybor in
+                    
+                        0) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part1:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+                        wybor=$?
+                        odp=`cat wybor_fs`
+        
+                        case $wybor in
+                                0) sudo mkfs.$odp $part1      # NIE ZAPOMNIEC 
+                                   sudo mkdir -p $sc
+                                   sudo mount $part1 $sc
+                                    break ;;
+                                
+                                1) continue ;;
+                       esac ;;
+                       
+                        1) continue ;;
+                    
+                    esac ;;
+                    
+                    2) dialog --title "Mount" --inputbox "Pod jaka sciezka chesz zamontowac partycje (moze to byc dowolna sciezka np /home)" 8 35 "" 2> sciezka
+                    
+                    wybor=$?
+                    sc=`cat sciezka`
+                    
+                    case $wybor in
+                    
+                        0) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part2:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+                        wybor=$?
+                        odp=`cat wybor_fs`
+        
+                        case $wybor in
+                                0) sudo mkfs.$odp $part2      # NIE ZAPOMNIEC 
+                                   sudo mkdir -p $sc
+                                   sudo mount $part2 $sc
+                                    break ;;
+                                
+                                1) continue ;;
+                       esac ;;
+                       
+                        1) continue ;;
+                    
+                    esac ;;
+                    
+                    3) dialog --title "Mount" --inputbox "Pod jaka sciezka chesz zamontowac partycje (moze to byc dowolna sciezka np /home)" 8 35 "" 2> sciezka
+                    
+                    wybor=$?
+                    sc=`cat sciezka`
+                    
+                    case $wybor in
+                    
+                        0) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part3:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+                        wybor=$?
+                        odp=`cat wybor_fs`
+        
+                        case $wybor in
+                                0) sudo mkfs.$odp $part3      # NIE ZAPOMNIEC 
+                                   sudo mkdir -p $sc
+                                   sudo mount $part3 $sc
+                                    break ;;
+                                
+                                1) continue ;;
+                       esac ;;
+                       
+                        1) continue ;;
+                    
+                    esac ;;
+                    
+                    4) dialog --title "Mount" --inputbox "Pod jaka sciezka chesz zamontowac partycje (moze to byc dowolna sciezka np /home)" 8 35 "" 2> sciezka
+                    
+                    wybor=$?
+                    sc=`cat sciezka`
+                    
+                    case $wybor in
+                    
+                        0) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part4:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+                        wybor=$?
+                        odp=`cat wybor_fs`
+        
+                        case $wybor in
+                                0) sudo mkfs.$odp $part4      # NIE ZAPOMNIEC 
+                                   sudo mkdir -p $sc
+                                   sudo mount $part4 $sc
+                                    break ;;
+                                
+                                1) continue ;;
+                       esac ;;
+                       
+                        1) continue ;;
+                    
+                    esac ;;
+                    
+                    5) dialog --title "Mount" --inputbox "Pod jaka sciezka chesz zamontowac partycje (moze to byc dowolna sciezka np /home)" 8 35 "" 2> sciezka
+                    
+                    wybor=$?
+                    sc=`cat sciezka`
+                    
+                    case $wybor in
+                    
+                        0) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part5:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+                        wybor=$?
+                        odp=`cat wybor_fs`
+        
+                        case $wybor in
+                                0) sudo mkfs.$odp $part5      # NIE ZAPOMNIEC 
+                                   sudo mkdir -p $sc
+                                   sudo mount $part5 $sc
+                                    break ;;
+                                
+                                1) continue ;;
+                       esac ;;
+                       
+                        1) continue ;;
+                    
+                    esac ;;
+                    
+                    6) dialog --title "Mount" --inputbox "Pod jaka sciezka chesz zamontowac partycje (moze to byc dowolna sciezka np /home)" 8 35 "" 2> sciezka
+                    
+                    wybor=$?
+                    sc=`cat sciezka`
+                    
+                    case $wybor in
+                    
+                        0) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part6:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+                        wybor=$?
+                        odp=`cat wybor_fs`
+        
+                        case $wybor in
+                                0) sudo mkfs.$odp $part6      # NIE ZAPOMNIEC 
+                                   sudo mkdir -p $sc
+                                   sudo mount $part6 $sc
+                                    break ;;
+                                
+                                1) continue ;;
+                       esac ;;
+                       
+                        1) continue ;;
+                    
+                    esac ;;
+                    
+                    7) dialog --title "Mount" --inputbox "Pod jaka sciezka chesz zamontowac partycje (moze to byc dowolna sciezka np /home)" 8 35 "" 2> sciezka
+                    
+                    wybor=$?
+                    sc=`cat sciezka`
+                    
+                    case $wybor in
+                    
+                        0) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part7:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+                        wybor=$?
+                        odp=`cat wybor_fs`
+        
+                        case $wybor in
+                                0) sudo mkfs.$odp $part7      # NIE ZAPOMNIEC 
+                                   sudo mkdir -p $sc
+                                   sudo mount $part7 $sc
+                                    break ;;
+                                
+                                1) continue ;;
+                       esac ;;
+                       
+                        1) continue ;;
+                    
+                    esac ;;
+                    
+                    8) dialog --title "Mount" --inputbox "Pod jaka sciezka chesz zamontowac partycje (moze to byc dowolna sciezka np /home)" 8 35 "" 2> sciezka
+                    
+                    wybor=$?
+                    sc=`cat sciezka`
+                    
+                    case $wybor in
+                    
+                        0) dialog --title "Wybor systemu plikow" --radiolist "Wybierz system plikow dla $part8:" 15 40 10 ext2 "" off ext3 "" off ext4 "" off ntfs "" off xfs "" off exFAT "" off jfs ""  off 2> wybor_fs
+        
+                        wybor=$?
+                        odp=`cat wybor_fs`
+        
+                        case $wybor in
+                                0) sudo mkfs.$odp $part8      # NIE ZAPOMNIEC 
+                                   sudo mkdir -p $sc
+                                   sudo mount $part8 $sc
+                                    break ;;
+                                
+                                1) continue ;;
+                       esac ;;
+                       
+                        1) continue ;;
+                    
+                    esac ;;
+                    
+                   Dalej) break ;;
+                    
+                   esac ;;
+            
+                1) powrot
+                   rm ilosc_part lista_dysk lista_part lista_part_dysk sciezka wybor_fs wybor_mnt wybor_part wybor_swap part_* 1
+                   exit ;;
+            
+            esac
+        
+        i=$[ $i + 1 ]
+        done
+else
+break
+fi
+done
+
+sudo rm ilosc_part lista_dysk lista_part lista_part_dysk sciezka wybor_fs wybor_mnt wybor_part wybor_swap part_* 1
+
+./install-configure
